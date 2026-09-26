@@ -2,6 +2,8 @@
 
 Beginner-friendly installation and usage guide for Microsoft Word VBA `.bas` modules.
 
+> **Quick Start:** For a concise step-by-step daily usage guide, see [Quick Start Guide](QuickStart.md).
+
 ## 1. Purpose
 
 This package provides reusable Microsoft Word macros for document cleanup and footnote-format review:
@@ -55,6 +57,7 @@ The repository and release package are structured as follows:
 ```text
 WordAutomationTools/
 ├── README.md
+├── QuickStart.md                    # Quick daily usage guide
 ├── Macros/
 │   ├── CommonUtilities.bas              # Shared helpers and guards
 │   ├── RemoveAllHyperlinks.bas          # Hyperlink removal
