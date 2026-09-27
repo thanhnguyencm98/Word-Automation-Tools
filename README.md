@@ -10,18 +10,19 @@ This package provides reusable Microsoft Word macros for document cleanup and fo
 
 | Module file | Macro | Purpose |
 |---|---|---|
-| `RemoveAllHyperlinks.bas` | `RemoveAllHyperlinks` | Removes clickable hyperlinks while retaining the visible text. |
-| `HighlightItalicFootnotes.bas` | `HighlightItalicFootnotes` | Highlights italic-formatted text in footnotes using yellow highlighting. |
-| `HighlightSmallCapsFootnotes.bas` | `HighlightSmallCapsFootnotes` | Highlights text formatted with Word's **Small caps** property in footnotes using yellow highlighting. |
+| `CommonUtilities.bas` | *(none)* | Shared document selection, safety checks, and undo handling. Required by every other module. |
+| `RemoveAllHyperlinks.bas` | `RemoveAllHyperlinks` | Removes clickable hyperlinks while retaining the visible text. Table of contents links are kept. |
+| `HighlightFootnotes.bas` | `HighlightItalicFootnotes` | Highlights italic-formatted text in footnotes using yellow highlighting. |
+| | `HighlightSmallCapsFootnotes` | Highlights text formatted with Word's **Small caps** property in footnotes using yellow highlighting. |
 | `RunAllChecks.bas` | `RunAllChecks` | Runs the three main macros in sequence. This module is optional. |
 
-> **Important:** These macros modify the active document. Always save a backup copy before running them.
+> **Important:** These macros modify the document you choose when you run them. Always save a backup copy before running them.
 
 ---
 
 ## 2. Requirements
 
-- Microsoft Word desktop application for Windows
+- Microsoft Word 2010 or later, desktop application for Windows
 - Permission to use VBA macros under your organization's security policy
 - The supplied `.bas` files
 - A document that you are permitted to modify
@@ -58,19 +59,19 @@ The repository and release package are structured as follows:
 WordAutomationTools/
 ├── README.md
 ├── QuickStart.md                    # Quick daily usage guide
+├── WordAutomationTools.docm         # Ready-built container with all modules imported
 ├── Macros/
-│   ├── CommonUtilities.bas              # Shared helpers and guards
-│   ├── RemoveAllHyperlinks.bas          # Hyperlink removal
-│   ├── HighlightItalicFootnotes.bas     # Footnote italic highlighting
-│   ├── HighlightSmallCapsFootnotes.bas  # Footnote Small Caps highlighting
-│   └── RunAllChecks.bas                 # Master review runner
-├── TestDocuments/
-│   └── SampleFootnoteTest.docx          # Test document fixture
-└── Results/
-    └── TestingReport.docx               # Verification test report
+│   ├── CommonUtilities.bas          # Shared helpers and guards
+│   ├── RemoveAllHyperlinks.bas      # Hyperlink removal
+│   ├── HighlightFootnotes.bas       # Footnote italic and Small Caps highlighting
+│   └── RunAllChecks.bas             # Master review runner
+└── Scripts/
+    └── Sync-Docm.ps1                # Rebuilds the .docm from Macros/ (maintainers)
 ```
 
 If `RunAllChecks.bas` is not supplied, the three main macros can still be run separately.
+
+The supplied `WordAutomationTools.docm` already contains every module. To use it, skip sections 5 and 6: open it with macros disabled, review the code (section 7), then continue with section 8. Sections 5 and 6 are only needed to build the container yourself from the `.bas` files.
 
 ---
 
@@ -142,10 +143,12 @@ Repeat the following procedure for every supplied `.bas` file:
 Import these required modules:
 
 ```text
+CommonUtilities.bas
 RemoveAllHyperlinks.bas
-HighlightItalicFootnotes.bas
-HighlightSmallCapsFootnotes.bas
+HighlightFootnotes.bas
 ```
+
+`CommonUtilities.bas` must always be imported. Without it, compilation fails with **Sub or Function not defined**.
 
 Import this module when included:
 
@@ -158,14 +161,15 @@ After importing, **Project Explorer** should look similar to:
 ```text
 Project (WordAutomationTools.docm)
 └── Modules
-    ├── CommonUtilities
-    ├── RemoveAllHyperlinks
-    ├── HighlightItalicFootnotes
-    ├── HighlightSmallCapsFootnotes
-    └── RunAllChecks
+    ├── mod_CommonUtilities
+    ├── mod_HighlightFootnotes
+    ├── mod_RemoveAllHyperlinks
+    └── mod_RunAllChecks
 ```
 
-The exact module display names may differ slightly from the file names. This is acceptable if the expected macro names are present.
+### Updating from version 1.0.0
+
+Version 1.0.0 had two separate modules, `mod_HighlightItalicFootnotes` and `mod_HighlightSmallCapsFootnotes`. Before importing `HighlightFootnotes.bas`, remove them (right-select the module > **Remove** > **No** to exporting). If they remain, compilation fails with **Ambiguous name detected**. Remove and reimport the other modules too, because their code has changed.
 
 ---
 
@@ -301,12 +305,13 @@ The macros safely target your open working documents without modifying `WordAuto
 **Recommended procedure:**
 
 1. Save a backup of the target document.
-2. Activate the target document.
+2. Open the target document, then switch to the `WordAutomationTools.docm` window.
 3. Press Alt + F8.
 4. Select `RemoveAllHyperlinks`.
 5. Select **Run**.
-6. Accept the confirmation only if hyperlink removal is intended.
-7. Review hyperlinks in body text, footnotes, endnotes, headers, footers, and text boxes.
+6. Choose the target document when prompted.
+7. Accept the confirmation only if hyperlink removal is intended.
+8. Review hyperlinks in body text, footnotes, endnotes, headers, footers, and text boxes.
 
 **Example:**
 
@@ -330,22 +335,29 @@ The visible text remains, but the hyperlink is removed.
 
 This macro should remove Word hyperlink objects. It should not be replaced with a general `Fields.Unlink` operation, because unlinking every field can affect tables of contents, cross-references, page-number fields, citation fields, and other dynamic Word content.
 
+**Table of contents links are kept:**
+
+Entries in a table of contents or table of figures are themselves hyperlinks, pointing to hidden `_Toc` bookmarks. The macro leaves these in place and reports how many it kept, so the table stays clickable. Other links within the document, such as a link to a bookmark or heading that you inserted yourself, are removed.
+
 ### 13.2 `HighlightItalicFootnotes`
 
 **Purpose:** Highlights italic-formatted text in Word footnotes.
 
 **Procedure:**
 
-1. Activate the target document.
+1. Open the target document, then switch to the `WordAutomationTools.docm` window.
 2. Press Alt + F8.
 3. Select `HighlightItalicFootnotes`.
 4. Select **Run**.
-5. Review the yellow highlights in the footnote area.
+5. Choose the target document when prompted.
+6. Review the yellow highlights in the footnote area.
 
 **Expected result:**
 
 - Italic text in footnotes is highlighted yellow.
 - Bold italic text is also expected to match because it has italic formatting.
+- Italic text that is already partly yellow has only its unhighlighted part filled in. Parts with another highlight color are left unchanged.
+- Italic text that already has another highlight color (e.g., turquoise) is left unchanged and reported as skipped.
 - Italic text in the main document body is not targeted.
 - Endnotes are not targeted unless the VBA code is explicitly extended for endnotes.
 - Text that merely looks slanted because of the chosen typeface may not be detected as Word italic formatting.
@@ -356,15 +368,17 @@ This macro should remove Word hyperlink objects. It should not be replaced with 
 
 **Procedure:**
 
-1. Activate the target document.
+1. Open the target document, then switch to the `WordAutomationTools.docm` window.
 2. Press Alt + F8.
 3. Select `HighlightSmallCapsFootnotes`.
 4. Select **Run**.
-5. Review the yellow highlights in the footnote area.
+5. Choose the target document when prompted.
+6. Review the yellow highlights in the footnote area.
 
 **Expected result:**
 
 - Text formatted with **Font > Small caps** is highlighted yellow.
+- Existing highlights are handled the same way as for `HighlightItalicFootnotes`.
 - Plain text typed with uppercase letters is not necessarily Small Caps.
 - Small Caps in the main document body is not targeted.
 - Endnotes are not targeted unless the code is extended.
@@ -401,6 +415,9 @@ Create a disposable test document containing all of the following:
 - Word Small Caps footnote text
 - Plain `ALL-CAPS` footnote text without Small Caps formatting
 - A clickable hyperlink in a footnote
+- An italic footnote phrase with only its first word highlighted yellow
+- An italic footnote phrase highlighted turquoise
+- Two consecutive footnotes where the first ends and the second begins with italic text
 
 ### Optional document elements
 
@@ -420,10 +437,14 @@ Run each macro separately and record the result:
 | Footnote bold italic text | Highlighted yellow. |
 | Footnote Small Caps text | Highlighted yellow. |
 | Plain ALL-CAPS footnote text | Not highlighted unless Small Caps formatting is applied. |
+| Partly yellow italic phrase | The rest of the phrase turns yellow; counted as highlighted. |
+| Turquoise italic phrase | Stays turquoise; counted as skipped. |
+| Italic at the end of one footnote and start of the next | Both parts highlighted yellow. |
 | Body italic text | Not highlighted by the footnote macro. |
 | Body Small Caps text | Not highlighted by the footnote macro. |
-| Cross-reference and table of contents | Remain functional when the hyperlink macro deletes hyperlinks rather than unlinking all fields. |
-
+| Table of contents | Entries remain clickable; reported as table of contents links kept. |
+| Cross-reference | Remains functional. |
+| Ctrl+Z once after a macro run | All changes from that run are reverted together. |
 Do not deploy the package for normal document processing until the test results match the intended behavior in the Word version used by the target users.
 
 ---
@@ -456,7 +477,9 @@ After one macro finishes, press:
 Ctrl + Z
 ```
 
-However, VBA operations and long editing sessions may not always provide the same undo behavior as ordinary manual edits. A backup copy is the reliable recovery method.
+Each macro run is recorded as a single undo step, named after the macro (for example **Undo Run All Citation Checks**). One Ctrl + Z reverts every change from that run, including a run that stopped with an error partway through.
+
+Undo history is lost when the document is closed, and later edits must be undone first. A backup copy is the reliable recovery method.
 
 ### Recommended backup naming
 
@@ -498,18 +521,18 @@ Check the following:
 - The procedure has no required parameters.
 - The module is located under **Modules**, not inside an unexpected object module.
 - **Macros in** is set to **All active templates and documents**.
-- `WordAutomationTools.docm` is open.
+- `WordAutomationTools.docm` is open, and its window is active when you press Alt + F8. Word does not list macros stored in a different open document.
 - The VBA project compiles without errors.
 
 ### Problem: The wrong document was modified
 
-The macro acts on `ActiveDocument`.
+When run from the `WordAutomationTools.docm` window, the macro asks which open document to process. When run while another document's window is active (for example from a Quick Access Toolbar button), it processes that active document without asking.
 
 1. Stop editing and avoid saving over the original.
-2. Press Ctrl + Z when immediately available.
+2. Press Ctrl + Z once to undo the whole macro run, if no other edits were made since.
 3. Close the incorrectly modified document without saving, if appropriate.
 4. Restore the backup when necessary.
-5. Reopen both files and activate the intended target before running the macro.
+5. Run the macro again from the `WordAutomationTools.docm` window and choose the intended document when prompted.
 
 ### Problem: No footnote text is highlighted
 
@@ -517,7 +540,7 @@ Verify that:
 
 - The document contains footnotes rather than endnotes.
 - The target text has actual Italic or Small Caps formatting.
-- The correct target document was active.
+- The correct target document was chosen.
 - The target text is not inside a comment, text box, or another story type that is not part of the Footnotes collection.
 
 ### Problem: Plain uppercase text was not highlighted
@@ -528,9 +551,11 @@ This is expected. Apply Word's **Small caps** property if the text is intended t
 
 1. Note the exact error message and highlighted line.
 2. Confirm that every `.bas` file is complete and unmodified.
-3. Confirm that all required modules were imported.
-4. Select **Tools** > **References** and check for `MISSING:` entries.
-5. Reimport the original module if accidental edits are suspected.
+3. Confirm that all required modules were imported, including `CommonUtilities.bas`.
+4. **Ambiguous name detected** means a procedure exists twice, usually because the version 1.0.0 modules `mod_HighlightItalicFootnotes` and `mod_HighlightSmallCapsFootnotes` are still present. Remove them (see section 6).
+5. Select **Tools** > **References** and check for `MISSING:` entries.
+6. Reimport the original module if accidental edits are suspected.
+7. A compile error on `UndoRecord` means the Word version is older than Word 2010, which is not supported.
 
 ### Problem: Macros remain blocked
 
@@ -550,6 +575,24 @@ If the VBA source is intentionally changed and needs to be saved back to a `.bas
 6. Compile and retest the complete project.
 
 Do not rename a module casually if another module calls one of its public macros.
+
+### Rebuild the `.docm` from the `.bas` files
+
+The `.bas` files in `Macros/` are the source of truth. After changing them, update the committed `WordAutomationTools.docm` so the two do not drift apart:
+
+1. In Word, enable **File** > **Options** > **Trust Center** > **Trust Center Settings** > **Macro Settings** > **Trust access to the VBA project object model**.
+2. Close all Word windows.
+3. From the repository folder, run:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File Scripts\Sync-Docm.ps1
+   ```
+
+   The script removes every module from the `.docm`, imports each file in `Macros/`, and saves it.
+4. Turn the Trust Center option off again.
+5. Open the `.docm`, compile it (section 8), and test it before committing.
+
+Edit the `.bas` files, not the modules inside the `.docm`; the script overwrites those. If you edit in the VBA editor instead, export the modules back to `Macros/` first.
 
 ---
 
@@ -595,12 +638,31 @@ Suggested version record:
 
 ```text
 Package: Word Automation Tools
-Version: 1.0.0
+Version: 1.1.0
 Container: WordAutomationTools.docm
-Modules: 4 required (including CommonUtilities), 1 optional
+Modules: 3 required (CommonUtilities, RemoveAllHyperlinks, HighlightFootnotes), 1 optional (RunAllChecks)
 Highlight color: Yellow
-Scope: Hyperlinks throughout available Word story ranges; formatting checks in footnotes
+Scope: Hyperlinks throughout available Word story ranges (table of contents links kept); formatting checks in footnotes
+Requires: Word 2010 or later for Windows
 ```
+
+### Version history
+
+**1.1.0**
+
+- Merged the italic and Small Caps modules into `HighlightFootnotes.bas`.
+- Italic or Small Caps text that is already partly yellow now has its unhighlighted part filled in; previously it was skipped and miscounted as "other highlight".
+- Formatted text that runs across the boundary between two footnotes is now highlighted in both.
+- `RemoveAllHyperlinks` keeps table of contents and table of figures links.
+- Each macro run is a single undo step.
+- Error messages now show the error description and, for `RunAllChecks`, the step that failed.
+- Track Changes now prompts to continue or cancel instead of only informing.
+- Word's alert and screen-updating settings are restored to their previous values after a run.
+- The document-number prompt rejects non-integer and oversized input instead of raising a VBA error.
+
+**1.0.0**
+
+- Initial release.
 
 ---
 
@@ -609,9 +671,10 @@ Scope: Hyperlinks throughout available Word story ranges; formatting checks in f
 - The formatting macros target footnotes, not endnotes.
 - The macros detect Word formatting properties, not visual appearance inferred from a font design.
 - Plain uppercase text is not equivalent to Small Caps.
-- Existing yellow highlighting is preserved without duplicate counting; non-yellow highlights (e.g., turquoise, pink) are preserved and reported as skipped per FR-5.
+- Existing yellow highlighting is preserved without duplicate counting; non-yellow highlights (e.g., turquoise, pink) are preserved and reported as skipped. When a segment is partly unhighlighted, only the unhighlighted part is made yellow.
 - Password-protected, read-only, restricted, or protected documents may prevent modifications.
-- Tracked Changes will record hyperlink deletions and highlights as markup if enabled. Turn off Track Changes or accept prior revisions before running.
+- Tracked Changes will record hyperlink deletions and highlights as markup if enabled. The macros ask before continuing; turn off Track Changes or accept prior revisions before running.
+- Table of contents and table of figures links are recognised by their hidden `_Toc` bookmark targets and kept. Other internal links are removed.
 - Hyperlinks produced or refreshed by other dynamic fields may require separate review.
 - Results should be validated in the organization's supported Word version before production use.
 
@@ -625,9 +688,9 @@ Before running a macro:
 - [ ] I reviewed or trust the imported VBA source.
 - [ ] Organizational policy allows me to run the macros.
 - [ ] I saved a backup of the target document.
-- [ ] `WordAutomationTools.docm` is open.
-- [ ] The intended target document is the active document.
+- [ ] `WordAutomationTools.docm` is open and its window is active.
 - [ ] I selected the correct macro.
+- [ ] I chose the intended target document when prompted.
 
 After running a macro:
 

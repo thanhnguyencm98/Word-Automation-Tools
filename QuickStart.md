@@ -1,52 +1,57 @@
 # Quick Start Guide: Word Citation Automation Tools
 
-Hướng dẫn sử dụng nhanh công cụ macro từ file `WordAutomationTools.docm`.
+A quick guide to using the macros in `WordAutomationTools.docm`.
 
 ---
 
-## 1. Chuẩn bị (Chỉ làm lần đầu)
+## 1. Setup (first time only)
 
-1. Tải về hoặc mở file **`WordAutomationTools.docm`**.
-2. Nếu Word hiển thị thanh màu vàng cảnh báo bảo mật: Bấm **Enable Content** (Bật nội dung).
+1. Download or open **`WordAutomationTools.docm`**.
+2. If Word shows a yellow security warning bar, select **Enable Content**.
 
 ---
 
-## 2. Quy trình sử dụng hàng ngày
+## 2. Daily workflow
 
-### Bước 1: Mở các tài liệu
-1. Mở file công cụ **`WordAutomationTools.docm`**.
-2. Mở file tài liệu Word (`.docx` hoặc `.docm`) mà bạn cần kiểm tra, rà soát citations.
+### Step 1: Open the documents
+1. Open the tool file **`WordAutomationTools.docm`**.
+2. Open the Word document (`.docx` or `.docm`) whose citations you need to review.
 
-### Bước 2: Chạy Macro
-1. **Chuyển sang cửa sổ file `WordAutomationTools.docm`**:
-   - Nhấn phím **Alt + F8** trên bàn phím.
-   *(Lưu ý: Phải bấm Alt + F8 từ cửa sổ `WordAutomationTools.docm` thì Word mới hiển thị danh sách macro).*
-2. Chọn một trong các macro:
-   - **`RunAllChecks`**: Thực hiện toàn bộ 3 bước (gỡ link $\rightarrow$ bôi vàng Italic $\rightarrow$ bôi vàng Small Caps trong footnote). *(Khuyên dùng)*
-   - **`RemoveAllHyperlinks`**: Chỉ gỡ bỏ hyperlinks.
-   - **`HighlightItalicFootnotes`**: Chỉ bôi vàng chữ nghiêng trong footnote.
-   - **`HighlightSmallCapsFootnotes`**: Chỉ bôi vàng chữ Small Caps trong footnote.
-3. Bấm nút **Run**.
+### Step 2: Run a macro
+1. **Switch to the `WordAutomationTools.docm` window** and press **Alt + F8**.
+   *(Note: Word only lists the macros when Alt + F8 is pressed from the `WordAutomationTools.docm` window.)*
+2. Select one of the macros:
+   - **`RunAllChecks`**: Runs all 3 steps (remove links → highlight italics → highlight Small Caps in footnotes). *(Recommended)*
+   - **`RemoveAllHyperlinks`**: Removes hyperlinks only.
+   - **`HighlightItalicFootnotes`**: Highlights italic text in footnotes only.
+   - **`HighlightSmallCapsFootnotes`**: Highlights Small Caps text in footnotes only.
+3. Select **Run**.
 
-### Bước 3: Chọn tài liệu cần xử lý
-- **Nếu bạn chỉ mở 1 file tài liệu:** Hộp thoại sẽ hỏi xác nhận:  
-  `"Do you want to process the open target document: 'Ten_File.docx'?"` $\rightarrow$ Chọn **Yes**.
-- **Nếu bạn đang mở nhiều file tài liệu cùng lúc:** Hộp thoại sẽ hiển thị danh sách đánh số:
+### Step 3: Choose the document to process
+- **If only 1 document is open:** A dialog asks for confirmation:
+  `"Do you want to process the open target document: 'File_Name.docx'?"` → Select **Yes**.
+- **If several documents are open:** A dialog shows a numbered list:
   ```text
   Multiple target documents are open.
   Enter the number corresponding to the document you want to process:
-  
+
   1. LegalBrief_v1.docx
   2. ResearchNote.docx
   ```
-  Bạn chỉ cần nhập số (ví dụ: `1`) và nhấn **OK**.
+  Type the number (for example `1`) and select **OK**.
+- **If the document has Track Changes turned on:** The macro asks whether to continue, because every change will be recorded as a revision. To avoid this, select **No**, turn off Track Changes, and run the macro again.
+- **For `RunAllChecks` and `RemoveAllHyperlinks`:** Confirm the final prompt with **Yes**.
 
-### Bước 4: Xem kết quả
-- Khi chạy xong, macro hiển thị hộp thoại thống kê chi tiết (số hyperlink đã gỡ, số đoạn text được highlight).
-- Bấm **OK** và lưu lại file đã sửa.
+### Step 4: Review the results
+1. When the macro finishes, it shows a summary (number of hyperlinks removed, number of text segments highlighted). Select **OK**.
+2. Check the changes in the document.
+3. If the result is not what you wanted, press **Ctrl + Z** once to undo the whole macro run.
+4. Save the modified document.
 
 ---
 
-## 3. Lưu ý an toàn
-- Luôn lưu 1 bản sao lưu (backup copy) của tài liệu trước khi chạy gỡ hyperlink.
-- File công cụ `WordAutomationTools.docm` được bảo vệ tự động, macro sẽ không bao giờ tự ý sửa đổi lên chính nó.
+## 3. Safety notes
+- Always save a backup copy of the document before removing hyperlinks.
+- Table of contents links are kept, so the table of contents stays clickable.
+- Italic or Small Caps text that already has a highlight color other than yellow keeps its original color.
+- The macros never modify the tool file `WordAutomationTools.docm` itself.
